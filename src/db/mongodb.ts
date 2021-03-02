@@ -38,7 +38,7 @@ const dropDatabase = async () => {
 };
 
 mongoose.connection.on("connected", () =>
-  console.log(`${dbName} mongoose connection is opened at ${url}`)
+  console.log(`${dbName} mongoose connection is opened`)
 );
 
 mongoose.connection.on("error", (err) =>
