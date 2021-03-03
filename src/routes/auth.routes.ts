@@ -8,6 +8,7 @@ import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
+  Redis,
 } from "../helpers";
 
 export const authRoutes = Router();
@@ -57,6 +58,24 @@ authRoutes.post("/refresh-token", async (req, res, next) => {
     const accessToken = await signAccessToken(userId);
     const newRefreshToken = await signRefreshToken(userId);
     return res.send({ accessToken, refreshToken: newRefreshToken });
+  } catch (err) {
+    next(err);
+  }
+});
+
+authRoutes.delete("/logout", async (req, res, next) => {
+  try {
+    const refreshToken = req.body;
+    if (!refreshToken) throw new createError.BadRequest();
+    const userId = await verifyRefreshToken(refreshToken);
+    if (typeof userId === "string")
+      Redis.client.DEL(userId, (err, value) => {
+        if (err) {
+          console.log(err.message);
+          throw new createError.InternalServerError();
+        }
+        res.sendStatus(204);
+      });
   } catch (err) {
     next(err);
   }

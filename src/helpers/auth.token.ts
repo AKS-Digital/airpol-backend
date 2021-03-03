@@ -70,7 +70,7 @@ export const verifyRefreshToken = (refreshToken: string) => {
       (err, decoded) => {
         if (err) return reject(new createError.Unauthorized());
         // @ts-ignore
-        const userId = decoded.aud;
+        const userId: string = decoded.aud;
 
         Redis.client.GET(userId, (err, result) => {
           if (err) {
