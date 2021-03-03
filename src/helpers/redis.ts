@@ -2,7 +2,11 @@ import redis from "redis";
 
 //Default Redis config
 //localhost : 127.0.0.1 & port 6379
-const client = redis.createClient({ port: 6379, host: "127.0.0.1" });
+const client = redis.createClient(process.env.REDIS_URL, {
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
 const open = () => {
   client.on("connect", () => {
