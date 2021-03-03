@@ -3,7 +3,7 @@ import createError from "http-errors";
 import cors from "cors";
 
 // Import routes
-import { defaultRoutes } from "./routes";
+import { defaultRoutes, authRoutes } from "./routes";
 
 export const app = express();
 
@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Router
+app.use("/auth", authRoutes);
 app.use(defaultRoutes);
 
 // Error handler middleware
