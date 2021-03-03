@@ -1,6 +1,7 @@
 import JWT, { decode } from "jsonwebtoken";
 import createError from "http-errors";
 import { Request, Response, NextFunction } from "express";
+import { Redis } from "./redis";
 
 // Decode userId at https://jwt.io/
 
@@ -50,7 +51,13 @@ export const signRefreshToken = (userId: string) => {
     };
     JWT.sign(payload, secret, options, (err, token) => {
       if (err) return reject(new createError.InternalServerError());
-      resolve(token);
+      Redis.client.SET(userId, token, "EX", 365 * 24 * 60 * 60, (err) => {
+        if (err) {
+          console.log(err.message);
+          return reject(new createError.InternalServerError());
+        }
+        resolve(token);
+      });
     });
   });
 };
@@ -63,7 +70,16 @@ export const verifyRefreshToken = (refreshToken: string) => {
       (err, decoded) => {
         if (err) return reject(new createError.Unauthorized());
         // @ts-ignore
-        resolve(decoded.aud);
+        const userId = decoded.aud;
+
+        Redis.client.GET(userId, (err, result) => {
+          if (err) {
+            console.log(err.message);
+            return reject(new createError.InternalServerError());
+          }
+          if (refreshToken === result) return resolve(userId);
+          reject(new createError.Unauthorized());
+        });
       }
     );
   });
