@@ -10,10 +10,15 @@ import {
   verifyRefreshToken,
   Redis,
 } from "../helpers";
+import {
+  registerLimiter,
+  loginLimiter,
+  refreshTokenLimiter,
+} from "../limiters";
 
 export const authRoutes = Router();
 
-authRoutes.post("/register", async (req, res, next) => {
+authRoutes.post("/register", registerLimiter, async (req, res, next) => {
   try {
     const { email, password } = await authSchema.validateAsync(req.body);
     const user = await User.findOne({ email });
@@ -30,7 +35,7 @@ authRoutes.post("/register", async (req, res, next) => {
   }
 });
 
-authRoutes.post("/login", async (req, res, next) => {
+authRoutes.post("/login", loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = await authSchema.validateAsync(req.body);
     const user = await User.findOne({ email });
@@ -48,20 +53,24 @@ authRoutes.post("/login", async (req, res, next) => {
   }
 });
 
-authRoutes.post("/refresh-token", async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken || typeof refreshToken !== "string")
-      throw new createError.BadRequest();
-    const userId = await verifyRefreshToken(refreshToken);
-    if (typeof userId !== "string") throw new createError.BadRequest();
-    const accessToken = await signAccessToken(userId);
-    const newRefreshToken = await signRefreshToken(userId);
-    return res.send({ accessToken, refreshToken: newRefreshToken });
-  } catch (err) {
-    next(err);
+authRoutes.post(
+  "/refresh-token",
+  refreshTokenLimiter,
+  async (req, res, next) => {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken || typeof refreshToken !== "string")
+        throw new createError.BadRequest();
+      const userId = await verifyRefreshToken(refreshToken);
+      if (typeof userId !== "string") throw new createError.BadRequest();
+      const accessToken = await signAccessToken(userId);
+      const newRefreshToken = await signRefreshToken(userId);
+      return res.send({ accessToken, refreshToken: newRefreshToken });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 authRoutes.delete("/logout", async (req, res, next) => {
   try {

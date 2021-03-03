@@ -1,14 +1,18 @@
 import express, { NextFunction, Request, Response } from "express";
+import helmet from "helmet";
 import createError from "http-errors";
 import morgan from "morgan";
 import cors from "cors";
 
 // Import routes
 import { defaultRoutes, authRoutes } from "./routes";
+import { globalLimiter } from "./limiters";
 
 export const app = express();
 
 // Middlewares
+app.use(globalLimiter);
+app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
