@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import createError from "http-errors";
+import morgan from "morgan";
 import cors from "cors";
 
 // Import routes
@@ -9,6 +10,7 @@ export const app = express();
 
 // Middlewares
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
 
 // Router
