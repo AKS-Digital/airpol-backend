@@ -74,7 +74,7 @@ authRoutes.post(
 
 authRoutes.delete("/logout", async (req, res, next) => {
   try {
-    const refreshToken = req.body;
+    const { refreshToken } = req.body;
     if (!refreshToken) throw new createError.BadRequest();
     const userId = await verifyRefreshToken(refreshToken);
     if (typeof userId === "string")

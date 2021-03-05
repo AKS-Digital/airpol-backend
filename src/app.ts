@@ -5,7 +5,7 @@ import morgan from "morgan";
 import cors from "cors";
 
 // Import routes
-import { defaultRoutes, authRoutes } from "./routes";
+import { defaultRoutes, authRoutes, userRoutes } from "./routes";
 import { globalLimiter } from "./limiters";
 
 export const app = express();
@@ -19,6 +19,7 @@ app.use(express.json());
 
 // Router
 app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
 app.use(defaultRoutes);
 
 // Error handler middleware
